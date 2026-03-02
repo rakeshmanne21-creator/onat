@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Select Role</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#e9eef6;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+text-align:center;
+}
+
+.cards{
+display:flex;
+gap:40px;
+margin-top:40px;
+}
+
+.card{
+background:white;
+padding:40px;
+width:280px;
+border-radius:15px;
+box-shadow:0px 5px 20px rgba(0,0,0,0.1);
+cursor:pointer;
+transition:0.3s;
+}
+
+.card:hover{
+transform:scale(1.05);
+}
+
+.icon{
+font-size:60px;
+margin-bottom:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Select Your Role</h1>
+<p>Choose how you want to access the attendance system</p>
+
+<div class="cards">
+
+<div class="card"
+onclick="location.href='/student_login'">
+
+<div class="icon">🎓</div>
+<h2>Student</h2>
+<p>Mark attendance using QR & Face</p>
+
+</div>
+
+<div class="card"
+onclick="location.href='/faculty_login'">
+
+<div class="icon">👨‍🏫</div>
+<h2>Faculty</h2>
+<p>Generate QR & Manage Attendance</p>
+
+</div>
+
+<div class="card"
+onclick="location.href='/admin_login'">
+
+<div class="icon">⚙️</div>
+<h2>Admin</h2>
+<p>System Monitoring Panel</p>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

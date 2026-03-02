@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Faculty Dashboard</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#e9edf5;
+    text-align:center;
+}
+
+.card{
+    background:white;
+    width:420px;
+    margin:auto;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px gray;
+}
+
+img{
+    width:220px;
+    margin-top:15px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Faculty Attendance Dashboard</h1>
+
+<div class="card">
+
+<h3>Live Attendance Session</h3>
+
+<img id="qrImage" src="" />
+
+<h2 id="timer" style="color:red">
+QR Expires In : 120 sec
+</h2>
+
+<h3>
+Students Present :
+<span id="count" style="color:green">0</span>
+</h3>
+
+<br>
+
+<a href="/logout">
+<button style="background:red;color:white;padding:10px 20px">
+Logout
+</button>
+</a>
+
+</div>
+
+<script>
+
+let timeLeft = 0;
+
+/* ================= GENERATE QR ================= */
+function generateQR(){
+
+fetch("/generate_qr")
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("qrImage").src = data.qr;
+
+timeLeft = data.expires;
+
+});
+}
+
+/* ================= TIMER ================= */
+setInterval(()=>{
+
+if(timeLeft>0){
+timeLeft--;
+document.getElementById("timer")
+.innerText="QR Expires In : "+timeLeft+" sec";
+}
+else{
+generateQR();   // AUTO NEW QR
+}
+
+},1000);
+
+
+/* ================= LIVE COUNT ================= */
+setInterval(()=>{
+
+fetch("/live_count")
+.then(res=>res.json())
+.then(data=>{
+document.getElementById("count").innerText=data.count;
+});
+
+},3000);
+
+
+/* FIRST LOAD */
+generateQR();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<video id="video" autoplay></video>
+<button onclick="capture()">Verify Face</button>
+
+<script>
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+video.srcObject=stream;
+});
+
+function capture(){
+
+let canvas=document.createElement("canvas");
+canvas.width=320;
+canvas.height=240;
+
+canvas.getContext('2d')
+.drawImage(video,0,0);
+
+let image=canvas.toDataURL();
+
+navigator.geolocation.getCurrentPosition(pos=>{
+
+fetch("/verify_face",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({image:image})
+})
+.then(r=>r.json())
+.then(face=>{
+
+if(face.status=="matched"){
+
+fetch("/mark_attendance",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+lat:pos.coords.latitude,
+lon:pos.coords.longitude
+})
+}).then(()=>location="/attendance_success");
+
+}
+else{
+location="/attendance_failed";
+}
+
+});
+});
+}
+</script>

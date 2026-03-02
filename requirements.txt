@@ -1,0 +1,8 @@
+Flask
+mysql-connector-python
+gunicorn
+qrcode
+opencv-python-headless
+numpy
+face-recognition
+Pillow

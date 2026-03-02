@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Register</title>
+
+<style>
+body{
+font-family:Arial;
+background:#eef2f7;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:white;
+padding:40px;
+border-radius:10px;
+box-shadow:0 0 15px rgba(0,0,0,0.1);
+width:300px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#28a745;
+color:white;
+border:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Admin Register</h2>
+
+<form method="POST">
+
+<input name="username"
+placeholder="Username" required>
+
+<input type="password"
+name="password"
+placeholder="Password" required>
+
+<button type="submit">
+Register Admin
+</button>
+
+</form>
+
+<br>
+<a href="/admin_login">Login</a>
+
+</div>
+
+</body>
+</html>

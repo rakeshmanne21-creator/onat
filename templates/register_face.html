@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Registration</title>
+</head>
+
+<body>
+
+<h2>Capture Your Face</h2>
+
+<video id="video" width="320" autoplay></video>
+<br><br>
+
+<button onclick="capture()">Capture Face</button>
+
+<script>
+
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+document.getElementById("video").srcObject=stream;
+});
+
+function capture(){
+
+let canvas=document.createElement("canvas");
+canvas.width=320;
+canvas.height=240;
+
+canvas.getContext("2d")
+.drawImage(video,0,0);
+
+let image=canvas.toDataURL();
+
+fetch("/save_face",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({image:image})
+})
+.then(r=>r.json())
+.then(d=>{
+alert("Face Registered Successfully");
+window.location="/";
+});
+
+}
+
+</script>
+
+</body>
+</html>
