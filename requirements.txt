@@ -6,6 +6,4 @@ qrcode[pil]
 pandas
 openpyxl
 gunicorn
-face-recognition
 cmake
-dlib
