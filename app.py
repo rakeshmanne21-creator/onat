@@ -10,6 +10,7 @@ import numpy as np
 import face_recognition
 import cv2
 import pandas as pd
+known_face_encodings = {}
 
 app = Flask(__name__)
 app.secret_key = "smart_attendance_secret"
@@ -51,6 +52,39 @@ def reconnect_db():
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+
+# =====================================================
+# LOAD FACE ENCODINGS (OPTIMIZATION)
+# =====================================================
+
+def load_known_faces():
+
+    global known_face_encodings
+    known_face_encodings.clear()
+    folder = os.path.join(app.root_path, "static", "faces")
+
+    if not os.path.exists(folder):
+        return
+
+    for file in os.listdir(folder):
+
+        if file.endswith(".jpg"):
+
+            roll = file.split("_")[0]
+
+            path = os.path.join(folder, file)
+
+            image = face_recognition.load_image_file(path)
+
+            enc = face_recognition.face_encodings(image)
+
+            if len(enc) > 0:
+
+                if roll not in known_face_encodings:
+                    known_face_encodings[roll] = []
+
+                known_face_encodings[roll].append(enc[0])
 
 
 # =====================================================
@@ -178,6 +212,8 @@ def save_face():
 
     with open(path,"wb") as f:
         f.write(image_bytes)
+
+    load_known_faces()
 
     return jsonify({"status":"saved"})
 
@@ -389,20 +425,9 @@ def face_verify_api():
 
     folder=os.path.join(app.root_path,"static","faces")
 
-    known_encodings=[]
-
-    for file in os.listdir(folder):
-
-        if file.startswith(roll):
-
-            img_path=os.path.join(folder,file)
-
-            image=face_recognition.load_image_file(img_path)
-
-            enc=face_recognition.face_encodings(image)
-
-            if len(enc)>0:
-                known_encodings.append(enc[0])
+    known_encodings = known_face_encodings.get(roll, [])
+    if len(known_encodings) == 0:
+        return jsonify({"status":"no_registered_face"})
 
     face_locations=face_recognition.face_locations(frame)
 
@@ -691,7 +716,7 @@ def logout():
 # =====================================================
 # RUN SERVER (RENDER READY)
 # =====================================================
-
+load_known_faces()
 if __name__=="__main__":
     port=int(os.environ.get("PORT",5000))
     app.run(host="0.0.0.0",port=port,debug=True)
