@@ -3,3 +3,5 @@ static/faces/
 __pycache__/
 .vscode/
 attendance_report.xlsx
+shape_predictor_68_face_landmarks.dat
+*.pyc
