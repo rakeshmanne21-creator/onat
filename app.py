@@ -139,7 +139,7 @@ def register():
         reconnect_db()
 
         cursor.execute("""
-        INSERT INTO students(name,roll_no,email,password)
+        INSERT INTO students(name,roll_number,email,password)
         VALUES(%s,%s,%s,%s)
         """,(
             request.form.get("name"),
@@ -187,7 +187,7 @@ def save_face():
     student_id=session["student_id"]
 
     cursor.execute(
-        "SELECT roll_no FROM students WHERE id=%s",
+        "SELECT roll_number FROM students WHERE id=%s",
         (student_id,)
     )
 
@@ -406,7 +406,7 @@ def face_verify_api():
     student_id=session["student_id"]
 
     cursor.execute(
-        "SELECT roll_no FROM students WHERE id=%s",
+        "SELECT roll_number FROM students WHERE id=%s",
         (student_id,)
     )
 
@@ -496,7 +496,7 @@ def live_attendance():
     reconnect_db()
 
     cursor.execute("""
-    SELECT s.name, s.roll_no, a.time
+    SELECT s.name, s.roll_number, a.time
     FROM attendance a
     JOIN students s ON a.student_id=s.id
     WHERE a.date=CURDATE()
@@ -642,7 +642,7 @@ def get_students():
     reconnect_db()
 
     cursor.execute("""
-    SELECT name, roll_no, email
+    SELECT name, roll_number, email
     FROM students
     """)
 
@@ -673,7 +673,7 @@ def export_attendance():
     reconnect_db()
 
     cursor.execute("""
-    SELECT s.name, s.roll_no, a.date, a.time
+    SELECT s.name, s.roll_number, a.date, a.time
     FROM attendance a
     JOIN students s ON a.student_id=s.id
     ORDER BY a.date DESC
