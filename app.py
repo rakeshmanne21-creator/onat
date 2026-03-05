@@ -27,6 +27,7 @@ def get_db_connection():
         password=os.environ.get("MYSQLPASSWORD"),
         database=os.environ.get("MYSQLDATABASE"),
         port=int(os.environ.get("MYSQLPORT", 3306))
+        pool_size=5
     )
 # INITIAL DATABASE CONNECTION
 db = get_db_connection()
@@ -715,7 +716,17 @@ def logout():
 # =====================================================
 # RUN SERVER (RENDER READY)
 # =====================================================
-load_known_faces()
-if __name__=="__main__":
-    port=int(os.environ.get("PORT",5000))
-    app.run(host="0.0.0.0",port=port,debug=True)
+@app.teardown_appcontext
+def close_db(error):
+    global db
+    try:
+        if db.is_connected():
+            db.close()
+    except:
+        pass
+
+
+if __name__ == "__main__":
+    load_known_faces()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
