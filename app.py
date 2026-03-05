@@ -194,12 +194,15 @@ def save_face():
     roll = cursor.fetchone()[0]
 
     data=request.get_json()
+    # protection against invalid request
+    if not data or "image" not in data:
+        return jsonify({"status":"invalid_image"})
 
     image_data=data["image"].split(",")[1]
 
     image_bytes=base64.b64decode(image_data)
 
-    folder=os.path.join(app.root_path,"static","faces")
+    folder="static/faces"
 
     os.makedirs(folder,exist_ok=True)
 
