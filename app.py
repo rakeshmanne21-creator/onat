@@ -27,7 +27,7 @@ def get_db_connection():
         password=os.environ.get("MYSQLPASSWORD"),
         database=os.environ.get("MYSQLDATABASE"),
         port=int(os.environ.get("MYSQLPORT", 3306)),
-        pool_size=5
+        
     )
 # INITIAL DATABASE CONNECTION
 db = get_db_connection()
