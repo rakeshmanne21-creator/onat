@@ -61,30 +61,29 @@ def hash_password(password):
 def load_known_faces():
 
     global known_face_encodings
+
     known_face_encodings.clear()
-    folder = os.path.join(app.root_path, "static", "faces")
 
-    if not os.path.exists(folder):
-        return
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
 
-    for file in os.listdir(folder):
+    cursor.execute("SELECT roll_number, face_encoding FROM students WHERE face_encoding IS NOT NULL")
 
-        if file.endswith(".jpg"):
+    students = cursor.fetchall()
 
-            roll = file.split("_")[0]
+    for s in students:
 
-            path = os.path.join(folder, file)
+        roll = s["roll_number"]
+        encoding_str = s["face_encoding"]
+        if not encoding_str:
+            continue
 
-            image = face_recognition.load_image_file(path)
+        encoding = np.array(list(map(float, encoding_str.split(","))))
 
-            enc = face_recognition.face_encodings(image)
+        if roll not in known_face_encodings:
+            known_face_encodings[roll] = []
 
-            if len(enc) > 0:
-
-                if roll not in known_face_encodings:
-                    known_face_encodings[roll] = []
-
-                known_face_encodings[roll].append(enc[0])
+        known_face_encodings[roll].append(encoding)
 
 
 # =====================================================
@@ -213,6 +212,27 @@ def save_face():
     with open(path,"wb") as f:
         f.write(image_bytes)
 
+# ---------- FACE ENCODING ----------
+   
+    image = face_recognition.load_image_file(path)
+
+    encodings = face_recognition.face_encodings(image)
+
+    if len(encodings) == 0:
+        return jsonify({"status":"no_face"})
+
+    encoding = encodings[0]
+
+    encoding_str = ",".join(map(str, encoding))
+
+    cursor.execute(
+    "UPDATE students SET face_encoding=%s WHERE roll_number=%s",
+    (encoding_str, roll)
+    )
+
+    db.commit()
+# -----------------------------------
+
     load_known_faces()
 
     return jsonify({"status":"saved"})
@@ -314,7 +334,7 @@ def generate_qr():
 
     token=str(uuid.uuid4())
 
-    expiry=datetime.datetime.now()+datetime.timedelta(minutes=10)
+    expiry=datetime.datetime.utcnow()+datetime.timedelta(minutes=2)
 
     cursor.execute("""
     INSERT INTO sessions(qr_token,expiry_time)
@@ -333,7 +353,7 @@ def generate_qr():
 
     return jsonify({
         "qr":"/"+path,
-        "expires":600
+        "expires":120
     })
 
 
@@ -436,13 +456,16 @@ def face_verify_api():
     if len(encodings)==0:
         return jsonify({"status":"no_face"})
 
-    distances=face_recognition.face_distance(
-        known_encodings,encodings[0]
+    distances = face_recognition.face_distance(
+        known_encodings, encodings[0]
     )
 
-    best_match=min(distances)
+    if len(distances) == 0:
+        return jsonify({"status": "face_failed"})
 
-    if best_match < 0.55:
+    best_match = min(distances)
+
+    if best_match < 0.50:
 
         cursor.execute("""
         SELECT * FROM attendance
@@ -608,19 +631,22 @@ def face_dataset():
     faces = []
 
     for s in students:
+     folder = "static/faces"
 
-        image_path = f"static/faces/{s['roll_number']}.jpg"
+     if not os.path.exists(folder):
+        os.makedirs(folder)
 
-        if os.path.exists(image_path):
-            faces.append({
-                "name": s["name"],
-                "roll": s["roll_number"],
-                "image": image_path
-            })
+     files = [f for f in os.listdir(folder) if f.startswith(str(s["roll_number"]))]
 
-    return render_template("face_dataset.html", faces=faces)
+     if files:
+         image_path = f"{folder}/{files[0]}"
 
-
+         faces.append({
+             "name": s["name"],
+             "roll": s["roll_number"],
+             "image": image_path
+         })
+    return render_template("face_dataset.html", faces=faces)     
 # =====================================================
 # ADMIN ANALYTICS API
 # =====================================================
@@ -752,4 +778,4 @@ def close_db(error):
 if __name__ == "__main__":
     load_known_faces()
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
